@@ -1,0 +1,11 @@
+Note: Here we have not used @RequestBody annotation as it is used to handle POST requests; since we are not sending any
+data in the request body so, there is no need for @RequestBody annotation here.
+
+If we want to add @RequestBody annotation to handle GET request, we should use a different HTTP method i.e. @PostMapping
+instead of @GetMapping. Below is the code implementation for the same.
+POST : http://localhost:8080/get
+{
+    "id": "1",
+    "name": "Durgesh",
+    "age": "3"
+}

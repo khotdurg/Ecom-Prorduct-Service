@@ -1,0 +1,154 @@
+                                        8/May/2024 : Actuator
+* application.properties :  management.endpoints.web.exposure.include=mappings //helps us to see all the url mapping in
+the code
+* postman : GET - http://localhost:8080/actuator/mappings
+- It shows all the url that our applications supports
+- Whatever url/APIs created inside the controller, Spring creates all sorted list of url or objects which is handled By
+Handler, springboot creates all the list of mappings of these url/objects. actual mapping is done by spring only.
+- Actuator is hidden, it helps us to see the data (mappings, urls)
+- Spring boot maintains mapping of all endpoints and their respective methods.
+- End points
+    http://localhost:8080/    <-- this is an domain name
+    hi                        <-- is the endpoint/ apiurl
+    www.google.com/bhandara   <-- first one is domain name and second one is endpoint/apiurl
+
+                                                    MVC
+* The starting point of the mvc is FILTER
+  - FILTER: Incoming request before coming in the spring container FILTER checks Aunthentication and Authorization checks
+    logging, monitoring latency.
+  - these request received by DispatcherServlet.
+
+* DispatcherServlet: Responsible for routing the request to that classes/methods
+  - Handler Mapping: It talks to DispatcherServlet. Handler is the class that stores all the mappings
+  - After that request recieved in Handler Interceptors.
+
+* Handler Interceptors: It processes the incoming requests and handles out going responses before the are returning to
+the client
+
+                                                IOC Container
+* Jvm maintains the IOC container and there has a space that space maintain object of all beans
+beans like: @Component, @Service, @Repository, @Configuration, @Controller, RestController
+when we mentioned these top of the any particular class, spring creates an object of that particular class and inject them
+inside the IOC container.
+
+                                                   9/MAy/2024
+* We directly cannot create/build service class it causes Dependency Inversion Principle (DIP) violation. so we create
+ProductService as an interface.
+* Convert Entity to DTO by using Mapper.
+
+* if i will use @Autowired for the product service in the productController itself, then how will our controller know which
+particular class should be Autowired?. controller will get confused because ProductService is an interface and which implements
+two more classes.
+
+* when we run our application it get error: Consider marking one of the beans as @Primary, updating the consumer to
+accept multiple beans, or using @Qualifier to identify the bean that should be consumed.
+Because, controller got confused to which Bean we must be inject
+
+* Getting error Consider marking one of the beans as @Primary, updating the consumer to accept multiple beans, or using
+* when we run our application it get error: Consider marking one of the beans as @Primary, updating the consumer to
+accept multiple beans, or using @Qualifier to identify the bean that should be consumed.
+Because, controller got confused to which Bean we must be inject
+Solution: on top of the ProductController classe mark as @Service("fakeStoreProductService").
+
+*properties which we have use in for url in the application.properties which should be read and inject in the FakeStoreClient.
+to read and inject the properties we use @Value()
+
+* DeSerialisation -> process of converting a json string to an object
+* Serialisation -> process for converting an object to a json string
+
+* Postman:
+    GET: http://localhost:8080/product
+Code Flow:- ProductController -> ProductServiceImpl -> FakeStoreClient -> then final service which we want
+
+                                                10/May/2024
+* Controller -> Input -> DTO, Output -> DTO, Downstream(service) -> DTO
+controller only deals with DTOs
+
+* Service -> Input -> DTO, Output -> DTO, DownStream(Repository) -> Entity
+layer at which dto to entity, or entity to dto conversion happens conversion can be part of business logic
+
+* Repository -> Input -> Entity, Output -> Entity, DB saves Entity
+
+* Client -> Input -> DTO, Output -> DTO, all DTO
+
+* Service will be responsiblle to convert DTO to entity
+* Client -> Input -> DTO, Output -> DTO, all DTO
+
+Repository deals with Entity and here client will deals with DTOs only
+
+TO GET A PARTICULAR PRODUCT AS PER productId, hit the request in the post man as
+GET: http://localhost:8080/product/1
+as we know fake store has stored data upto 20 productId if we will enter 21 and try to fetch the data we will get empty
+but this is not good. if we will debug we will get Response Body is null, so that we will throw an exception.
+
+*To handle such cases we use Global Exception Handler by the name ExceptionHandler inside the exception package itself.
+
+* @ControllerAdvice annotation will be use on the top of the ExceptionHandler class. This annotation will says that,when
+our controller tries to throw an exception then @ControllerAnnotation will tell to controller dont do anything do as per
+the configuration.
+
+* After exception handling for a particular product
+GET : http://localhost:8080/product/21
+RECIEVED: {
+              "message": "Product not found with id: 21",
+              "code": 404
+          }
+
+* FLOW OF THE CODE:
+                @ControllerAdvice--> ProductNotFoundException
+                 /            (null)      (null)
+API -> controller -> service <--> client <--> fakeStore
+                       |
+                  null check --> ProductNotFoundException
+
+* Created 2 APIs in CartController and ProductController both will throw same Exception i.e. RandomException and these
+will be handle handle by CartControllerExceptionHandler and ProductControllerExceptionHandler.
+* When we debug and see the flow productexception API is handled by ProductControllerExceptionHandler even after mentiontioned
+this class belonging from this class and all like @ControllerAdvice(basePackageClasses = ProductController.class) and
+@ControllerAdvice(basePackageClasses = CartController.class).
+* Because, when we write @ControllerAdvice(basePackageClasses = CartController.class) it bifercation package not class.
+basePackageClasses is do like combine all the classes and sort the alphabetically and once we hit exception it provide
+1st once whatever present on Ath place.
+Solution: Domain driven design (Functionality wise MVC)
+
+                                                13/May/2024
+Q.How to add products in db?
+* Create ProductRepository will extends JpaRepository this will talks to ProductServiceImpl
+* In ProductServiceImpl inject (@Autowired) ProductRepository also create a product in ProductServiceImpl Itself.
+* PostMapping for create product in productController
+* Created DB as ecom
+http call : POST: http://localhost:8080/product
+Input: {
+          "title" : "Iphone15",
+          "price" : "65000.60",
+          "description" : "best iphone for your kidneys",
+          "category" : "trying to look cool with stuffs",
+          "imageURL" : "http://allselfiesarenowmirrorselfies.com",
+          "rating" : "5.5"
+       }
+
+Output1: {
+            "title": "Iphone15",  //here also we did not see any createdAt and updatedAt because
+            "price": 65000.6,       //in BaseModel entities are private
+            "description": "best iphone for your kidneys",
+            "category": "trying to look cool with stuffs",
+            "imageURl": null,
+            "rating": 5.5
+        }
+
+Output2:
+        {
+            "id": 102,
+            "createdAt": "2024-05-13T10:25:33.032928Z",     //After provide getters and setters we are able to
+            "updatedAt": "2024-05-13T10:25:33.033928Z",     //see the createdAt and UpdatedAt columns
+            "title": "Iphone16",
+            "price": 75000.6,
+            "description": "best iphone for your kidneys",
+            "category": "trying to look cool with stuffs",
+            "imageURl": null,
+            "rating": 5.5
+        }
+* In ecom db createdAt and updatedAt are the columns are null.
+* If we dont want these 2 columns are null then we must use   @CreationTimestamp & @UpdateTimestamp in the BaseModel itself.
+Flow of the code:
+ProductController -> ProductServiceImpl -> then |>
