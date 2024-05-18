@@ -148,7 +148,27 @@ Output2:
             "imageURl": null,
             "rating": 5.5
         }
+
+* Get product: GET : http://localhost:8080/product/3b47867f-6168-46db-999d-fc7b4be6844c
+output: {
+            "id": "3b47867f-6168-46db-999d-fc7b4be6844c",
+            "createdAt": "2024-05-18T05:21:33.667405Z",
+            "updatedAt": "2024-05-18T05:21:33.667405Z",
+            "title": "Iphone19",
+            "price": 105000.6,
+            "description": "best iphone for your kidneys",
+            "category": "trying to look cool with stuffs",
+            "imageURl": null,
+            "rating": 5.5
+        }
+
+
 * In ecom db createdAt and updatedAt are the columns are null.
 * If we dont want these 2 columns are null then we must use   @CreationTimestamp & @UpdateTimestamp in the BaseModel itself.
 Flow of the code:
 ProductController -> ProductServiceImpl -> then |>
+
+                                                    14/May/2024
+* Removed implementation of ProductService(interface) in FakeStoreProductServiceImpl and also removed all @Override Annotations
+implementations in ProductServiceImpl changed from FakeStoreProductResponseDTO to Product also change UUID instead of int
+in ProductServiceImpl as well as in ProductRepository.

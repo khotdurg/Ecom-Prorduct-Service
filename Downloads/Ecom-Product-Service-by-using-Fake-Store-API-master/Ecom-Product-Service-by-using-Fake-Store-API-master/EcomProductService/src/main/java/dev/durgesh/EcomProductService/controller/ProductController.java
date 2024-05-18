@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class ProductController {
@@ -22,22 +23,24 @@ public class ProductController {
     //GET ALL PRODUCT
     @GetMapping("/product")
     public ResponseEntity getAllProducts(){
-        List<FakeStoreProductResponseDTO> products = productService.getAllProducts();
+        List<Product> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity getProductById(@PathVariable("id") int id){
-        FakeStoreProductResponseDTO product = productService.getProduct(id);
-        if(id < 1){
+    public ResponseEntity getProductById(@PathVariable("id") UUID id){
+        if(id == null){
             throw new InvalidInputException("Input is not correct");
         }
+        Product product = productService.getProduct(id);
         return ResponseEntity.ok(product);
     }
 
-    @GetMapping("/productexception")
-    public ResponseEntity getProductException(){
-        throw new RandomException("Exception from product");
+
+    @PutMapping("/product/{id}")
+    public ResponseEntity updateProduct(@PathVariable("id") UUID id, @RequestBody Product product){
+        Product updatedProduct = productService.updateproduct(product,id);
+        return ResponseEntity.ok(updatedProduct);
     }
 
     @PostMapping("/product")
@@ -45,4 +48,25 @@ public class ProductController {
         Product savedProduct = productService.createProduct(product);
         return ResponseEntity.ok(savedProduct);
     }
+
+    @DeleteMapping("/product/{id}")
+    public ResponseEntity deleteProduct(@PathVariable("id") UUID id){
+        if (id == null) {
+            throw new InvalidInputException("Product ID is required");
+        }
+        return ResponseEntity.ok(
+                productService.deleteProduct(id));
+    }
+
+
+
+
+/*
+    //used for demo of controller advice
+    @GetMapping("/productexception")
+    public ResponseEntity getProductException(){
+        throw new RandomException("Exception from product");
+    }
+ */
+
 }
